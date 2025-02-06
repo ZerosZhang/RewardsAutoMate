@@ -1,0 +1,29 @@
+﻿<Window x:Class="RewardAutoMate.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:BaseWPFControl ="https://BaseWPFControl"
+        mc:Ignorable="d" SizeToContent="Width" Height="800" d:Width="400"
+        Title="MainWindow" Closing="Window_Closing">
+    <Window.Resources>
+        <ResourceDictionary>
+            <!--  BaseWPFControl中定义的默认样式  -->
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/BaseWPFControl;component/Themes/Generic.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <DockPanel>
+        <!-- 这里将动态添加方块 -->
+        <Grid x:Name="HeatmapGrid" d:Height="100" DockPanel.Dock="Top" />
+
+        <BaseWPFControl:MemoryBlock DockPanel.Dock="Bottom" />
+
+        <BaseWPFControl:LogBlock x:Name="LogBlock" Visibility="Collapsed" />
+        <ContentControl x:Name="ContentControl_Log" d:Height="100" Content="{Binding ElementName=LogBlock, Path=LogView}" />
+
+    </DockPanel>
+
+</Window>

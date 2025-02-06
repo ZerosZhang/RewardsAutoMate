@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="Selenium.WebDriver" Version="4.28.0" />
+    <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="131.0.2903.48" />
+    <PackageReference Include="SqlSugarCore" Version="5.1.4.175" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="BaseTool">
+      <HintPath>D:\VisualStudioCode\ToolsRepository V4.0\BaseWPFControl\bin\Debug\net8.0-windows\BaseTool.dll</HintPath>
+    </Reference>
+    <Reference Include="BaseWPFControl">
+      <HintPath>D:\VisualStudioCode\ToolsRepository V4.0\BaseWPFControl\bin\Debug\net8.0-windows\BaseWPFControl.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
