@@ -121,7 +121,7 @@ namespace RewardAutoMate
                     string _search_word = AutoStrTrans(DefaultSearchWords[Random.Next(DefaultSearchWords.Length)]);
                     BaseLogManager.SendLog(LogLevel.Debug, $"【{DateTime.Today.ToShortDateString()}】【{_count + 1}/{MaxRewards}】正在搜索：{_search_word}...", true);
 
-                    if ((_count + 1) % 5 == 0)
+                    if (_count != 0 && _count % 5 == 0)
                     {
                         BaseLogManager.SendLog(LogLevel.Warning, $"暂停 {PauseTime / 1000 / 60} 分钟...", true);
                         await Task.Delay(PauseTime, BaseAction.Token);
