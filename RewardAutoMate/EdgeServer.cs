@@ -1,13 +1,15 @@
 ﻿using OpenQA.Selenium.Edge;
 using BaseTool;
 using LogLevel = BaseTool.LogLevel;
+using System.Drawing.Printing;
+using System.IO;
 
 namespace RewardAutoMate
 {
     public static class EdgeServer
     {
         const int MaxRewards = 40;
-        const int PauseTime = 960000; // 16分钟
+        const int PauseTimeMinute = 15;
 
         private static readonly Random Random = new();
 
@@ -101,14 +103,38 @@ namespace RewardAutoMate
             "健康服务创新发展", "经济增长潜力释放", "国际合作空间拓展", "政治制度自信增强", "教育质量提升工程推进"
         ];
 
+        /// <summary>
+        /// 随机获取一个搜索词
+        /// </summary>
+        /// <returns></returns>
+        private static string GetRandomSearchWord() => DefaultSearchWords[Random.Next(DefaultSearchWords.Length)];
+
+        private static readonly string Characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+        /// <summary>
+        /// 生成指定长度的包含大写字母、小写字母和数字的随机字符串
+        /// </summary>
+        /// <param name="_length"></param>
+        /// <returns></returns>
+        private static string GenerateRandomString(int _length)
+        {
+            string _result = "";
+            for (int i = 0; i < _length; i++)
+            {
+                _result += Characters[Random.Next(Characters.Length)];
+            }
+            return _result;
+        }
+
         public static async Task<uint> AutoSearch()
         {
             EdgeDriverService service = EdgeDriverService.CreateDefaultService();
             service.HideCommandPromptWindow = true;              // 设置不显示控制台窗口
 
             // 指定 Edge 用户数据文件夹路径
-            var options = new EdgeOptions();
-            options.AddArgument(@"--user-data-dir=C:\Users\Administrator\AppData\Local\Microsoft\Edge\User Data");
+            EdgeOptions options = new EdgeOptions();
+            string _edge_user_data_dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "Edge", "User Data");
+            options.AddArgument($"--user-data-dir={_edge_user_data_dir}");
 
             uint _count = 0;
             EdgeDriver driver = new EdgeDriver(service, options);
@@ -118,23 +144,22 @@ namespace RewardAutoMate
                 BaseAction.Token.ThrowIfCancellationRequested();
                 for (_count = 0; _count < MaxRewards; _count++)
                 {
-                    string _search_word = AutoStrTrans(DefaultSearchWords[Random.Next(DefaultSearchWords.Length)]);
+                    string _search_word = GetRandomSearchWord();
                     BaseLogManager.SendLog(LogLevel.Debug, $"【{DateTime.Today.ToShortDateString()}】【{_count + 1}/{MaxRewards}】正在搜索：{_search_word}...", true);
 
                     if (_count != 0 && _count % 5 == 0)
                     {
-                        BaseLogManager.SendLog(LogLevel.Warning, $"暂停 {PauseTime / 1000 / 60} 分钟...", true);
-                        await Task.Delay(PauseTime, BaseAction.Token);
+                        BaseLogManager.SendLog(LogLevel.Warning, $"暂停 {PauseTimeMinute} 分钟...", true);
+                        await Task.Delay(TimeSpan.FromMinutes(PauseTimeMinute), BaseAction.Token);
                     }
 
                     string _random_string = GenerateRandomString(4);
                     string _rand_cvid = GenerateRandomString(32);
                     string searchUrl = _count <= MaxRewards / 2
-                               ? $"https://www.bing.com/search?q={Uri.EscapeDataString(_search_word)}&form={_random_string}&cvid={_rand_cvid}"
-                               : $"https://cn.bing.com/search?q={Uri.EscapeDataString(_search_word)}&form={_random_string}&cvid={_rand_cvid}";
+                        ? $"https://www.bing.com/search?q={Uri.EscapeDataString(_search_word)}&form={_random_string}&cvid={_rand_cvid}"
+                        : $"https://cn.bing.com/search?q={Uri.EscapeDataString(_search_word)}&form={_random_string}&cvid={_rand_cvid}";
 
-                    // 打开指定 URL
-                    driver.Navigate().GoToUrl(searchUrl);
+                    driver.Navigate().GoToUrl(searchUrl); // 打开指定 URL
                     await Task.Delay(Random.Next(1000, 30000), BaseAction.Token);
 
                     // 定义 JavaScript 函数实现平滑滚动
@@ -158,8 +183,6 @@ namespace RewardAutoMate
 
                         smoothScrollToBottom();
                     ";
-
-                    // 示例：滚动页面到底部
                     driver.ExecuteScript(smoothScrollScript);
 
                     int _random_delay = Random.Next(10000, 30000);
@@ -182,43 +205,5 @@ namespace RewardAutoMate
         }
 
 
-        // 生成指定长度的包含大写字母、小写字母和数字的随机字符串
-        static string GenerateRandomString(int length)
-        {
-            const string characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            string result = "";
-            for (int i = 0; i < length; i++)
-            {
-                result += characters[Random.Next(characters.Length)];
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// 字符串转换
-        /// </summary>
-        /// <param name="st"></param>
-        /// <returns></returns>
-        static string AutoStrTrans(string st)
-        {
-            string rStr = "";
-            string zStr = "";
-            int prePo = 0;
-            for (int i = 0; i < st.Length;)
-            {
-                var step = Random.Next(1, 6);
-                if (i > 0)
-                {
-                    zStr += string.Concat(st.AsSpan(prePo, i - prePo), rStr);
-                    prePo = i;
-                }
-                i += step;
-            }
-            if (prePo < st.Length)
-            {
-                zStr += st[prePo..];
-            }
-            return zStr;
-        }
     }
 }
