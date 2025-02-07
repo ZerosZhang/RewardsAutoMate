@@ -1,5 +1,4 @@
 ﻿using BaseTool;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,7 +16,7 @@ public partial class MainWindow : Window
     [AllowNull]
     private List<QueueItem> HeatmapData = [];
 
-    Task MainTask;
+    private readonly Task MainTask;
 
     public MainWindow()
     {
@@ -28,25 +27,24 @@ public partial class MainWindow : Window
         CreateHeatmap();
         UpdateHeatmap();
 
-        MainTask = Task.Run(async () =>
+        // 采用一发即忘的方式，让线程在后台持续运行
+        MainTask = AutoSearchFunction();
+    }
+
+    private async Task AutoSearchFunction()
+    {
+        while (true)
         {
-            while (true)
-            {
-                QueueItem _item = QueueService.GetTodayCount();
-                if (_item.Count >= 40)
-                {
-                    continue;
-                }
+            QueueItem _item = QueueService.GetTodayCount();
+            _item.Count += await EdgeServer.AutoSearch();
 
-                _item.Count += await EdgeServer.AutoSearch();
+            // 自动搜索结束后更新数据库和热力图
+            QueueService.UpdateItem(_item);
+            HeatmapData = QueueService.DequeueTop365();
+            Dispatcher.Invoke(UpdateHeatmap);
 
-                QueueService.UpdateItem(_item);
-                HeatmapData = QueueService.DequeueTop365();
-                Dispatcher.Invoke(UpdateHeatmap);
-
-                await Task.Delay(TimeSpan.FromHours(8));
-            }
-        });
+            await Task.Delay(TimeSpan.FromHours(12));
+        }
     }
 
     private void CreateHeatmap()
@@ -110,16 +108,15 @@ public partial class MainWindow : Window
     private static SolidColorBrush GetColorFromValue(uint value) => value switch
     {
         0 => new SolidColorBrush(Color.FromRgb(235, 237, 240)),
-        < 20 => new SolidColorBrush(Color.FromRgb(195, 232, 193)),
-        < 30 => new SolidColorBrush(Color.FromRgb(129, 201, 143)),
-        < 40 => new SolidColorBrush(Color.FromRgb(57, 163, 105)),
-        >= 40 => new SolidColorBrush(Color.FromRgb(22, 99, 66)),
+        <= 40 => new SolidColorBrush(Color.FromRgb(195, 232, 193)),
+        <= 80 => new SolidColorBrush(Color.FromRgb(129, 201, 143)),
+        <= 120 => new SolidColorBrush(Color.FromRgb(57, 163, 105)),
+        >= 120 => new SolidColorBrush(Color.FromRgb(22, 99, 66)),
     };
 
     private async void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
     {
         BaseAction.Cancel();
-        await Task.Delay(5000);
-        int i = 0;
+        await MainTask;
     }
 }

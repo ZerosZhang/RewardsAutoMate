@@ -1,7 +1,6 @@
 ﻿using OpenQA.Selenium.Edge;
 using BaseTool;
 using LogLevel = BaseTool.LogLevel;
-using System.Drawing.Printing;
 using System.IO;
 
 namespace RewardAutoMate
@@ -129,35 +128,34 @@ namespace RewardAutoMate
         public static async Task<uint> AutoSearch()
         {
             EdgeDriverService service = EdgeDriverService.CreateDefaultService();
-            service.HideCommandPromptWindow = true;              // 设置不显示控制台窗口
+            service.HideCommandPromptWindow = true;    // 设置不显示控制台窗口
 
-            // 指定 Edge 用户数据文件夹路径
             EdgeOptions options = new EdgeOptions();
             string _edge_user_data_dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "Edge", "User Data");
-            options.AddArgument($"--user-data-dir={_edge_user_data_dir}");
+            options.AddArgument($"--user-data-dir={_edge_user_data_dir}");  // 指定 Edge 用户数据文件夹路径用于登录账户信息
 
-            uint _count = 0;
             EdgeDriver driver = new EdgeDriver(service, options);
 
+            uint _count = 0;
             try
             {
                 BaseAction.Token.ThrowIfCancellationRequested();
                 for (_count = 0; _count < MaxRewards; _count++)
                 {
-                    string _search_word = GetRandomSearchWord();
-                    BaseLogManager.SendLog(LogLevel.Debug, $"【{DateTime.Today.ToShortDateString()}】【{_count + 1}/{MaxRewards}】正在搜索：{_search_word}...", true);
-
                     if (_count != 0 && _count % 5 == 0)
                     {
                         BaseLogManager.SendLog(LogLevel.Warning, $"暂停 {PauseTimeMinute} 分钟...", true);
                         await Task.Delay(TimeSpan.FromMinutes(PauseTimeMinute), BaseAction.Token);
                     }
 
+                    string _search_word = GetRandomSearchWord();
                     string _random_string = GenerateRandomString(4);
                     string _rand_cvid = GenerateRandomString(32);
                     string searchUrl = _count <= MaxRewards / 2
                         ? $"https://www.bing.com/search?q={Uri.EscapeDataString(_search_word)}&form={_random_string}&cvid={_rand_cvid}"
                         : $"https://cn.bing.com/search?q={Uri.EscapeDataString(_search_word)}&form={_random_string}&cvid={_rand_cvid}";
+
+                    BaseLogManager.SendLog(LogLevel.Debug, $"【{DateTime.Today.ToShortDateString()}】【{_count + 1}/{MaxRewards}】正在搜索：{_search_word}...", true);
 
                     driver.Navigate().GoToUrl(searchUrl); // 打开指定 URL
                     await Task.Delay(Random.Next(1000, 30000), BaseAction.Token);
@@ -203,7 +201,5 @@ namespace RewardAutoMate
                 driver.Quit();
             }
         }
-
-
     }
 }
