@@ -79,7 +79,7 @@ public partial class MainWindow : Window
     private void UpdateHeatmap()
     {
         // 假设从一年前的今天开始作为起始日期
-        DateTime _start_time = DateTime.Today.AddYears(-1);
+        DateTime _start_time = DateTime.Today.AddDays(-363);  // 7 * 52 - 1 = 363
         while (_start_time.DayOfWeek != DayOfWeek.Monday)
         {
             _start_time = _start_time.AddDays(1);
