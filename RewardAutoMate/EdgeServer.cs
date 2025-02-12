@@ -2,6 +2,8 @@
 using BaseTool;
 using LogLevel = BaseTool.LogLevel;
 using System.IO;
+using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium;
 
 namespace RewardAutoMate
 {
@@ -127,14 +129,21 @@ namespace RewardAutoMate
 
         public static async Task<uint> AutoSearch()
         {
-            EdgeDriverService service = EdgeDriverService.CreateDefaultService();
-            service.HideCommandPromptWindow = true;    // 设置不显示控制台窗口
+            //EdgeDriverService _service = EdgeDriverService.CreateDefaultService("msedgedriver.exe");
 
-            EdgeOptions options = new EdgeOptions();
-            string _edge_user_data_dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "Edge", "User Data");
-            options.AddArgument($"--user-data-dir={_edge_user_data_dir}");  // 指定 Edge 用户数据文件夹路径用于登录账户信息
+            //EdgeOptions options = new EdgeOptions();
+            //string _user_data_dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "Edge", "User Data");
+            //options.AddArgument($"--user-data-dir={_user_data_dir}");  // 指定 Edge 用户数据文件夹路径用于登录账户信息
 
-            EdgeDriver driver = new EdgeDriver(service, options);
+            //using EdgeDriver driver = new EdgeDriver(_service, options);
+
+            ChromeDriverService _service = ChromeDriverService.CreateDefaultService("chromedriver.exe");
+
+            ChromeOptions options = new ChromeOptions();
+            string _user_data_dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Google", "Chrome", "User Data");
+            options.AddArgument($"--user-data-dir={_user_data_dir}");  // 指定 chrome 用户数据文件夹路径用于登录账户信息
+
+            using ChromeDriver driver = new ChromeDriver(_service, options);
 
             uint _count = 0;
             try

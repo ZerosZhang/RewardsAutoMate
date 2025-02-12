@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:BaseWPFControl ="https://BaseWPFControl"
-        mc:Ignorable="d" SizeToContent="Width" Height="800" d:Width="400"
+        mc:Ignorable="d" SizeToContent="Width" Height="600" d:Width="400"
         Title="MainWindow" Closing="Window_Closing">
     <Window.Resources>
         <ResourceDictionary>
@@ -19,10 +19,14 @@
         <!-- 这里将动态添加方块 -->
         <Grid x:Name="HeatmapGrid" d:Height="100" DockPanel.Dock="Top" />
 
-        <BaseWPFControl:MemoryBlock DockPanel.Dock="Bottom" />
+        <DockPanel DockPanel.Dock="Bottom">
+            <Button x:Name="Button_Log" DockPanel.Dock="Right" Click="Button_Task_Click" />
+            <BaseWPFControl:MemoryBlock />
+        </DockPanel>
 
         <BaseWPFControl:LogBlock x:Name="LogBlock" Visibility="Collapsed" />
-        <ContentControl x:Name="ContentControl_Log" d:Height="100" Content="{Binding ElementName=LogBlock, Path=LogView}" />
+
+        <ContentControl x:Name="ContentControl_Log" Content="{Binding ElementName=LogBlock, Path=LogView}" />
 
     </DockPanel>
 

@@ -1,4 +1,5 @@
 ﻿using BaseTool;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 using System.Windows.Controls;
@@ -16,7 +17,7 @@ public partial class MainWindow : Window
     [AllowNull]
     private List<QueueItem> HeatmapData = [];
 
-    private readonly Task MainTask;
+    private readonly Timer MainTimer;
 
     public MainWindow()
     {
@@ -27,24 +28,18 @@ public partial class MainWindow : Window
         CreateHeatmap();
         UpdateHeatmap();
 
-        // 采用一发即忘的方式，让线程在后台持续运行
-        MainTask = AutoSearchFunction();
+        MainTimer = new Timer(async (_)=> await AutoSearchFunction(), null, TimeSpan.Zero, TimeSpan.FromHours(12));
     }
 
     private async Task AutoSearchFunction()
     {
-        while (true)
-        {
-            QueueItem _item = QueueService.GetTodayCount();
-            _item.Count += await EdgeServer.AutoSearch();
+        QueueItem _item = QueueService.GetTodayCount();
+        _item.Count += await EdgeServer.AutoSearch();
 
-            // 自动搜索结束后更新数据库和热力图
-            QueueService.UpdateItem(_item);
-            HeatmapData = QueueService.DequeueTop365();
-            Dispatcher.Invoke(UpdateHeatmap);
-
-            await Task.Delay(TimeSpan.FromHours(12));
-        }
+        // 自动搜索结束后更新数据库和热力图
+        QueueService.UpdateItem(_item);
+        HeatmapData = QueueService.DequeueTop365();
+        Dispatcher.Invoke(UpdateHeatmap);
     }
 
     private void CreateHeatmap()
@@ -88,7 +83,7 @@ public partial class MainWindow : Window
         {
             for (int j = 0; j < COLUMNS; j++)
             {
-                DateTime currentDate = _start_time.AddDays( j * 7 + i);
+                DateTime currentDate = _start_time.AddDays(j * 7 + i);
 
                 Border border = (Border)HeatmapGrid.Children[i * COLUMNS + j];
                 border.ToolTip = new ToolTip
@@ -114,9 +109,13 @@ public partial class MainWindow : Window
         >= 120 => new SolidColorBrush(Color.FromRgb(22, 99, 66)),
     };
 
-    private async void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+    private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
     {
         BaseAction.Cancel();
-        await MainTask;
+    }
+
+    private void Button_Task_Click(object sender, RoutedEventArgs e)
+    {
+        BaseLogManager.SendLog(LogLevel.Warning, $"{MainTimer is null}", true);
     }
 }
