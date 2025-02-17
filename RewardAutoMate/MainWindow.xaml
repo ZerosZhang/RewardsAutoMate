@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:BaseWPFControl ="https://BaseWPFControl"
         mc:Ignorable="d" SizeToContent="Width" Height="600" d:Width="400"
-        Title="MainWindow" Closing="Window_Closing">
+        Title="MainWindow" Closing="Window_Closing" Icon="{Binding }">
     <Window.Resources>
         <ResourceDictionary>
             <!--  BaseWPFControl中定义的默认样式  -->

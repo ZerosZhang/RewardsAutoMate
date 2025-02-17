@@ -1,9 +1,14 @@
 ﻿using BaseTool;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Drawing;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Application = System.Windows.Application;
+using Color = System.Windows.Media.Color;
+using Timer = System.Threading.Timer;
+using ToolTip = System.Windows.Controls.ToolTip;
 
 namespace RewardAutoMate;
 
@@ -16,6 +21,7 @@ public partial class MainWindow : Window
     private const int COLUMNS = 52;
     [AllowNull]
     private List<QueueItem> HeatmapData = [];
+    readonly NotifyIcon NotifyIcon = new NotifyIcon();
 
     private readonly Timer MainTimer;
 
@@ -23,12 +29,33 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
+        NotifyIcon.BalloonTipText = "设置界面已隐藏";
+        NotifyIcon.Icon = new Icon("RewardAutoMate.ico");
+        NotifyIcon.Visible = true;
+        NotifyIcon.DoubleClick += NotifyIcon_DoubleClick;
+
+        ContextMenuStrip _menu = new ContextMenuStrip();
+        NotifyIcon.ContextMenuStrip = _menu;
+
+        ToolStripMenuItem _item_99 = new ToolStripMenuItem() { Text = "退出" };
+        _item_99.Click += (_, _) => 
+        { 
+            BaseAction.Cancel(); 
+            Application.Current.Shutdown(); 
+        };
+        _menu.Items.Add(_item_99);
+
         HeatmapData = QueueService.DequeueTop365();
 
         CreateHeatmap();
         UpdateHeatmap();
 
         MainTimer = new Timer(async (_)=> await AutoSearchFunction(), null, TimeSpan.Zero, TimeSpan.FromHours(12));
+    }
+
+    private void NotifyIcon_DoubleClick(object? sender, EventArgs e)
+    {
+        Show();
     }
 
     private async Task AutoSearchFunction()
@@ -111,7 +138,8 @@ public partial class MainWindow : Window
 
     private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
     {
-        BaseAction.Cancel();
+        e.Cancel = true;
+        Hide();
     }
 
     private void Button_Task_Click(object sender, RoutedEventArgs e)
